@@ -1,0 +1,21 @@
+[package]
+name = "refract-srtp-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+refract-srtp = { path = ".." }
+
+[[bin]]
+name = "srtp_unprotect"
+path = "fuzz_targets/srtp_unprotect.rs"
+test = false
+doc = false
+bench = false

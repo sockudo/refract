@@ -1,0 +1,38 @@
+[package]
+name = "refract-net"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+readme = "README.md"
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+compio = { workspace = true, features = ["net"] }
+compio-buf.workspace = true
+metrics.workspace = true
+refract-core = { path = "../refract-core" }
+refract-slab = { path = "../refract-slab" }
+refract-uring = { path = "../refract-uring" }
+thiserror.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "net"
+harness = false
+
+[lints]
+workspace = true

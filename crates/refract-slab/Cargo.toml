@@ -1,0 +1,37 @@
+[package]
+name = "refract-slab"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+readme = "README.md"
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+alloc-track = []
+
+[dependencies]
+compio-buf.workspace = true
+crossbeam-queue.workspace = true
+libc.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "acquire_release"
+harness = false
+
+[lints]
+workspace = true

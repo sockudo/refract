@@ -1,0 +1,18 @@
+[package]
+name = "refract-codec-av1-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+refract-codec-av1 = { path = ".." }
+
+[[bin]]
+name = "av1_parse"
+path = "fuzz_targets/av1_parse.rs"

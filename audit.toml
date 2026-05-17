@@ -1,0 +1,7 @@
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+unsound = "deny"
+yanked = "deny"
+notice = "warn"
+

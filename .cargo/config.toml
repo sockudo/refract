@@ -1,0 +1,8 @@
+[alias]
+xtask = "run --package xtask --"
+
+[term]
+color = "auto"
+
+[env]
+RUST_BACKTRACE = "1"
