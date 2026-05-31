@@ -18,5 +18,16 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+refract-app = { path = "../refract-app" }
+refract-core = { path = "../refract-core" }
+refract-router = { path = "../refract-router" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+compio.workspace = true
+
 [lints]
 workspace = true

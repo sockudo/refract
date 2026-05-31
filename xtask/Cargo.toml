@@ -16,6 +16,9 @@ publish = false
 
 [dependencies]
 clap.workspace = true
+refract-loadgen = { path = "../crates/refract-loadgen" }
+refract-signal = { path = "../crates/refract-signal" }
+refract-xdp = { path = "../crates/refract-xdp" }
 xshell.workspace = true
 
 [package.metadata.docs.rs]

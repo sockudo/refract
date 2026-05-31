@@ -18,8 +18,12 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+alloc-track = ["dep:refract-slab", "refract-slab/alloc-track"]
+
 [dependencies]
 metrics.workspace = true
+refract-slab = { path = "../refract-slab", optional = true }
 thiserror.workspace = true
 
 [dev-dependencies]

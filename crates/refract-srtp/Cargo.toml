@@ -20,11 +20,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = []
+alloc-track = ["dep:refract-slab", "refract-slab/alloc-track"]
 simd = []
 
 [dependencies]
 aws-lc-rs.workspace = true
 metrics.workspace = true
+refract-slab = { path = "../refract-slab", optional = true }
 thiserror.workspace = true
 
 [dev-dependencies]

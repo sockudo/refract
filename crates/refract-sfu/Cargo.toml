@@ -18,5 +18,40 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+alloc-track = [
+    "refract-cc/alloc-track",
+    "refract-router/alloc-track",
+    "refract-rtp/alloc-track",
+    "refract-slab/alloc-track",
+    "refract-srtp/alloc-track",
+]
+
+[dependencies]
+compio.workspace = true
+refract-cc = { path = "../refract-cc" }
+refract-core = { path = "../refract-core" }
+refract-crypto = { path = "../refract-crypto" }
+refract-jitter = { path = "../refract-jitter" }
+refract-net = { path = "../refract-net" }
+refract-router = { path = "../refract-router" }
+refract-rtc = { path = "../refract-rtc" }
+refract-rtp = { path = "../refract-rtp" }
+refract-slab = { path = "../refract-slab" }
+refract-srtp = { path = "../refract-srtp" }
+refract-uring = { path = "../refract-uring" }
+rtrb.workspace = true
+rustc-hash = "=2.1.1"
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+refract-slab = { path = "../refract-slab", features = ["alloc-track"] }
+
+[[bench]]
+name = "sfu_hot_loop"
+harness = false
+
 [lints]
 workspace = true

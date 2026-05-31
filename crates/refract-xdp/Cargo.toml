@@ -14,6 +14,12 @@ keywords.workspace = true
 categories.workspace = true
 publish = false
 
+[dependencies]
+thiserror.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+aya.workspace = true
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

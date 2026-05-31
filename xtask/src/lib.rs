@@ -8,3 +8,4 @@
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
 #![warn(rust_2024_compatibility)]
+#![allow(clippy::multiple_crate_versions)]

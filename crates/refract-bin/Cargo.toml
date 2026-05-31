@@ -13,6 +13,13 @@ documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
 publish = false
+build = "build.rs"
+
+[features]
+default = ["runtime-compio", "app-echo", "codec-opus"]
+runtime-compio = []
+app-echo = []
+codec-opus = []
 
 [package.metadata.docs.rs]
 all-features = true
@@ -24,3 +31,22 @@ path = "src/main.rs"
 
 [lints]
 workspace = true
+
+[dependencies]
+clap.workspace = true
+core_affinity.workspace = true
+metrics.workspace = true
+refract-admin = { path = "../refract-admin" }
+refract-cluster = { path = "../refract-cluster" }
+refract-config = { path = "../refract-config" }
+refract-core = { path = "../refract-core" }
+refract-obs = { path = "../refract-obs" }
+refract-resilience = { path = "../refract-resilience" }
+refract-sfu = { path = "../refract-sfu" }
+refract-signal = { path = "../refract-signal" }
+signal-hook.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -18,5 +18,14 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+metrics.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-opentelemetry.workspace = true
+tracing-subscriber.workspace = true
+
 [lints]
 workspace = true

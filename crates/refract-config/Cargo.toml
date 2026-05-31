@@ -18,5 +18,17 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+arc-swap.workspace = true
+figment.workspace = true
+notify.workspace = true
+refract-core = { path = "../refract-core" }
+serde.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
 [lints]
 workspace = true

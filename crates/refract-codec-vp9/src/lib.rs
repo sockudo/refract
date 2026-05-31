@@ -7,7 +7,7 @@
 //! # Examples
 //!
 //! ```
-//! use refract_codec_vp9::{parse, Vp9Codec};
+//! use refract_codec_vp9::{Vp9Codec, parse};
 //! use refract_core::Codec;
 //!
 //! let payload = [0x08, 0x00];

@@ -162,7 +162,10 @@ impl CodecPacket {
     /// ```
     /// use refract_core::{CodecKind, CodecPacket};
     ///
-    /// assert_eq!(CodecPacket::new(CodecKind::Vp8, false, None).kind(), CodecKind::Vp8);
+    /// assert_eq!(
+    ///     CodecPacket::new(CodecKind::Vp8, false, None).kind(),
+    ///     CodecKind::Vp8
+    /// );
     /// ```
     #[must_use]
     pub const fn kind(self) -> CodecKind {
@@ -190,7 +193,11 @@ impl CodecPacket {
     /// ```
     /// use refract_core::{CodecKind, CodecPacket};
     ///
-    /// assert!(CodecPacket::new(CodecKind::H264, false, None).layer().is_none());
+    /// assert!(
+    ///     CodecPacket::new(CodecKind::H264, false, None)
+    ///         .layer()
+    ///         .is_none()
+    /// );
     /// ```
     #[must_use]
     pub const fn layer(self) -> Option<Layer> {

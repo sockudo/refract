@@ -18,5 +18,24 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+cluster-tests = []
+
+[dependencies]
+compio.workspace = true
+futures-core = "=0.3.32"
+openraft.workspace = true
+quinn.workspace = true
+redb.workspace = true
+refract-core = { path = "../refract-core" }
+refract-roomstore = { path = "../refract-roomstore" }
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
 [lints]
 workspace = true

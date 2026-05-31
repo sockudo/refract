@@ -1,3 +1,8 @@
 # refract-app-streaming
 
-Broadcast and streaming application boundary. Implementation details are intentionally deferred until the relevant Stage 1 prompt introduces tests, behavior, and production gates for this boundary.
+Broadcast and streaming application boundary for versioned slow-path stream
+control.
+
+The crate is gated by the `app-streaming` Cargo feature and implements bounded
+JSON commands for publishing, watching, unwatching, ending, and listing streams.
+It enforces broadcaster/viewer/admin claims before posting route changes.

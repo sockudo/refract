@@ -1,8 +1,10 @@
 //! Criterion benchmarks for RTP parse and fixed header rewrite hot paths.
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use refract_rtp::header::RtpHeader;
-use refract_rtp::rewriter::{RtpRewrite, RtpRewriter};
+use refract_rtp::{
+    header::RtpHeader,
+    rewriter::{RtpRewrite, RtpRewriter},
+};
 
 fn sample_packet() -> [u8; 1_500] {
     let mut packet = [0_u8; 1_500];

@@ -89,7 +89,10 @@ impl Fingerprint {
     ///
     /// ```
     /// # use refract_crypto::{Fingerprint, Stability};
-    /// assert_eq!(Fingerprint::from_der(b"certificate").stability(), Stability::Stage1);
+    /// assert_eq!(
+    ///     Fingerprint::from_der(b"certificate").stability(),
+    ///     Stability::Stage1
+    /// );
     /// ```
     #[must_use]
     pub const fn stability(self) -> Stability {

@@ -1,3 +1,11 @@
 # refract-app
 
-Application trait boundary for room policy and subscription decisions. Implementation details are intentionally deferred until the relevant Stage 1 prompt introduces tests, behavior, and production gates for this boundary.
+Application trait boundary for room policy and subscription decisions.
+
+Stage 1 defines:
+
+- `Application` and `Session` traits using RPITIT, with no `async-trait`.
+- `AppRegistry` keyed by bounded app names.
+- Type-erased `SessionRunner` over `Box<dyn ErasedSession>` for slow-path dispatch.
+- `SessionHandle` with bounded `rtrb` client and `SFU` core command rings.
+- Slow-path latency measurement with a 5 ms p99 target and 50 ms warning threshold.

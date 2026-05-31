@@ -1,6 +1,7 @@
 //! Fault injection and chaos testing harness.
 //!
-//! This crate is part of the Phase 0 workspace skeleton; implementation is added by later Stage 1 prompts.
+//! This crate is part of the Phase 0 workspace skeleton; implementation is added by later Stage 1
+//! prompts.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

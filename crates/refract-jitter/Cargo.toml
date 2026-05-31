@@ -18,5 +18,17 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+metrics.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+refract-slab = { path = "../refract-slab", features = ["alloc-track"] }
+
+[[bench]]
+name = "jitter_hot_path"
+harness = false
+
 [lints]
 workspace = true

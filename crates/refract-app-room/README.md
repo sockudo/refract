@@ -1,3 +1,8 @@
 # refract-app-room
 
-Default room application implementation boundary. Implementation details are intentionally deferred until the relevant Stage 1 prompt introduces tests, behavior, and production gates for this boundary.
+Default multi-party room application.
+
+Stage 1 supports multi-publisher/multi-subscriber rooms, configurable
+auto-subscribe, role-claim permission checks, active-speaker switching from
+audio-level reports, per-publisher max-layer caps, lifecycle administration,
+mute/unmute direction enforcement, and recording trigger delegation.

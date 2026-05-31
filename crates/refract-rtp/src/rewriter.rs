@@ -14,9 +14,11 @@
 //! # Ok::<(), refract_rtp::RtpError>(())
 //! ```
 
-use crate::header::{RtpHeader, read_u16, read_u32, write_u16, write_u32};
-use crate::metrics::record_rewrite;
-use crate::{RtpError, RtpResult, Stability};
+use crate::{
+    RtpError, RtpResult, Stability,
+    header::{RtpHeader, read_u16, read_u32, write_u16, write_u32},
+    metrics::record_rewrite,
+};
 
 const RTP_SEQUENCE_OFFSET: usize = 2;
 const RTP_TIMESTAMP_OFFSET: usize = 4;
@@ -110,7 +112,12 @@ impl RtpRewrite {
     ///
     /// ```
     /// # use refract_rtp::rewriter::RtpRewrite;
-    /// assert_eq!(RtpRewrite::new().remove_one_byte_extension(3).remove_extension_id(), Some(3));
+    /// assert_eq!(
+    ///     RtpRewrite::new()
+    ///         .remove_one_byte_extension(3)
+    ///         .remove_extension_id(),
+    ///     Some(3)
+    /// );
     /// ```
     #[must_use]
     pub const fn remove_one_byte_extension(mut self, id: u8) -> Self {
@@ -182,7 +189,12 @@ impl RtpRewrite {
     ///
     /// ```
     /// # use refract_rtp::rewriter::RtpRewrite;
-    /// assert_eq!(RtpRewrite::new().remove_one_byte_extension(1).remove_extension_id(), Some(1));
+    /// assert_eq!(
+    ///     RtpRewrite::new()
+    ///         .remove_one_byte_extension(1)
+    ///         .remove_extension_id(),
+    ///     Some(1)
+    /// );
     /// ```
     #[must_use]
     pub const fn remove_extension_id(self) -> Option<u8> {
@@ -256,7 +268,10 @@ impl OneByteExtension {
     ///
     /// ```
     /// # use refract_rtp::{rewriter::OneByteExtension, Stability};
-    /// assert_eq!(OneByteExtension::new(1, &[9])?.stability(), Stability::Stage1);
+    /// assert_eq!(
+    ///     OneByteExtension::new(1, &[9])?.stability(),
+    ///     Stability::Stage1
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -603,7 +618,13 @@ pub fn read_timestamp(packet: &[u8]) -> RtpResult<u32> {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "alloc-track")]
+    use refract_slab::assert_no_alloc;
+
     use super::*;
+
+    #[cfg(feature = "alloc-track")]
+    const HOT_PATH_SOAK_PACKETS: u16 = 16_384;
 
     #[test]
     fn rewrites_fixed_header_fields() {
@@ -661,5 +682,40 @@ mod tests {
             pub_sequence = pub_sequence.wrapping_add(37);
             sub_sequence = sub_sequence.wrapping_add(37);
         }
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rewrite_hot_path_does_not_allocate() {
+        let mut packet = [0x80, 96, 0, 1, 0, 0, 0, 10, 0, 0, 0, 7];
+        let rewrite = RtpRewrite::new()
+            .with_ssrc(9)
+            .with_sequence(2)
+            .with_timestamp(11);
+
+        assert_no_alloc!(|| RtpRewriter::new()
+            .rewrite(&mut packet, rewrite)
+            .expect("rewrite succeeds"));
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rewrite_hot_path_soak_does_not_allocate() {
+        let mut packet = [0x80, 96, 0, 1, 0, 0, 0, 10, 0, 0, 0, 7];
+        let rewriter = RtpRewriter::new();
+
+        assert_no_alloc!(|| {
+            (0..HOT_PATH_SOAK_PACKETS).for_each(|sequence| {
+                let rewrite = RtpRewrite::new()
+                    .with_ssrc(9)
+                    .with_sequence(sequence)
+                    .with_timestamp(u32::from(sequence));
+                rewriter
+                    .rewrite(&mut packet, rewrite)
+                    .expect("rewrite succeeds");
+            });
+        });
+
+        assert_eq!(read_sequence(&packet).expect("sequence is present"), 16_383);
     }
 }

@@ -10,8 +10,7 @@
 //! # Ok::<(), refract_rtp::RtpError>(())
 //! ```
 
-use crate::header::RtpHeader;
-use crate::{RtpError, RtpResult, Stability};
+use crate::{RtpError, RtpResult, Stability, header::RtpHeader};
 
 /// Returns the packet length after removing RTP padding.
 ///

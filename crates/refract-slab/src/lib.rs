@@ -1102,8 +1102,68 @@ pub mod alloc_tracking {
     use std::{
         alloc::System,
         backtrace::Backtrace,
-        cell::{Cell, RefCell},
+        cell::RefCell,
+        sync::atomic::{AtomicUsize, Ordering},
     };
+
+    static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+    static ALLOC_ZEROED: AtomicUsize = AtomicUsize::new(0);
+    static REALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+    static ALLOCATED_BYTES: AtomicUsize = AtomicUsize::new(0);
+
+    /// Process-wide allocation counters captured by the tracking allocator.
+    ///
+    /// The counters are intentionally cheap and do not capture backtraces.
+    /// [`assert_no_alloc`] remains the scoped backtrace-capturing verifier.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc-track")]
+    /// # {
+    /// use refract_slab::alloc_tracking::{allocation_counters, reset_allocation_counters};
+    ///
+    /// reset_allocation_counters();
+    /// let before = allocation_counters();
+    /// assert_eq!(before.total_operations(), 0);
+    /// # }
+    /// ```
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+    pub struct AllocationCounters {
+        /// Number of `GlobalAlloc::alloc` calls observed.
+        pub allocations: usize,
+        /// Number of `GlobalAlloc::alloc_zeroed` calls observed.
+        pub alloc_zeroed: usize,
+        /// Number of `GlobalAlloc::realloc` calls observed.
+        pub reallocations: usize,
+        /// Total requested allocation bytes observed.
+        pub allocated_bytes: usize,
+    }
+
+    impl AllocationCounters {
+        /// Returns the total allocation-like operations observed.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// # #[cfg(feature = "alloc-track")]
+        /// # {
+        /// use refract_slab::alloc_tracking::AllocationCounters;
+        ///
+        /// let counters = AllocationCounters {
+        ///     allocations: 1,
+        ///     alloc_zeroed: 2,
+        ///     reallocations: 3,
+        ///     allocated_bytes: 4,
+        /// };
+        /// assert_eq!(counters.total_operations(), 6);
+        /// # }
+        /// ```
+        #[must_use]
+        pub const fn total_operations(self) -> usize {
+            self.allocations + self.alloc_zeroed + self.reallocations
+        }
+    }
 
     /// One allocation record captured by the tracking allocator.
     #[derive(Clone, Debug)]
@@ -1122,9 +1182,33 @@ pub mod alloc_tracking {
     static GLOBAL: TrackingAllocator = TrackingAllocator;
 
     thread_local! {
-        static ENABLED: Cell<bool> = const { Cell::new(false) };
-        static RECORDING: Cell<bool> = const { Cell::new(false) };
+        static STATE: RefCell<TrackingState> = const { RefCell::new(TrackingState::disabled()) };
         static RECORDS: RefCell<Vec<AllocationRecord>> = const { RefCell::new(Vec::new()) };
+    }
+
+    #[derive(Debug, Clone, Copy)]
+    struct TrackingState {
+        enabled: bool,
+        recording: bool,
+    }
+
+    impl TrackingState {
+        const fn disabled() -> Self {
+            Self {
+                enabled: false,
+                recording: false,
+            }
+        }
+    }
+
+    struct TrackingGuard {
+        previous: TrackingState,
+    }
+
+    impl Drop for TrackingGuard {
+        fn drop(&mut self) {
+            STATE.with(|state| *state.borrow_mut() = self.previous);
+        }
     }
 
     unsafe impl GlobalAlloc for TrackingAllocator {
@@ -1132,7 +1216,17 @@ pub mod alloc_tracking {
             // SAFETY: forwarding to the system allocator with the caller's
             // layout preserves GlobalAlloc's contract.
             let ptr = unsafe { System.alloc(layout) };
-            record_allocation(layout);
+            count_allocation(&ALLOCATIONS, layout.size());
+            record_allocation("alloc", layout);
+            ptr
+        }
+
+        unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+            // SAFETY: forwarding to the system allocator with the caller's
+            // layout preserves GlobalAlloc's contract.
+            let ptr = unsafe { System.alloc_zeroed(layout) };
+            count_allocation(&ALLOC_ZEROED, layout.size());
+            record_allocation("alloc_zeroed", layout);
             ptr
         }
 
@@ -1141,6 +1235,62 @@ pub mod alloc_tracking {
             // pointer and layout preserves GlobalAlloc's contract.
             unsafe { System.dealloc(ptr, layout) };
         }
+
+        unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+            // SAFETY: forwarding to the system allocator with the caller's
+            // pointer, layout, and requested size preserves GlobalAlloc's contract.
+            let next = unsafe { System.realloc(ptr, layout, new_size) };
+            let next_layout = Layout::from_size_align(new_size, layout.align()).unwrap_or(layout);
+            count_allocation(&REALLOCATIONS, next_layout.size());
+            record_allocation("realloc", next_layout);
+            next
+        }
+    }
+
+    /// Returns process-wide allocation counters for alloc-track soak runs.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc-track")]
+    /// # {
+    /// use refract_slab::alloc_tracking::allocation_counters;
+    ///
+    /// let counters = allocation_counters();
+    /// assert!(counters.allocated_bytes >= counters.total_operations());
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn allocation_counters() -> AllocationCounters {
+        AllocationCounters {
+            allocations: ALLOCATIONS.load(Ordering::Relaxed),
+            alloc_zeroed: ALLOC_ZEROED.load(Ordering::Relaxed),
+            reallocations: REALLOCATIONS.load(Ordering::Relaxed),
+            allocated_bytes: ALLOCATED_BYTES.load(Ordering::Relaxed),
+        }
+    }
+
+    /// Resets process-wide allocation counters.
+    ///
+    /// This is intended for bounded soak tests and staging runs with a known
+    /// observation window.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc-track")]
+    /// # {
+    /// use refract_slab::alloc_tracking::{allocation_counters, reset_allocation_counters};
+    ///
+    /// reset_allocation_counters();
+    /// assert_eq!(allocation_counters().total_operations(), 0);
+    /// # }
+    /// ```
+    pub fn reset_allocation_counters() {
+        ALLOCATIONS.store(0, Ordering::Relaxed);
+        ALLOC_ZEROED.store(0, Ordering::Relaxed);
+        REALLOCATIONS.store(0, Ordering::Relaxed);
+        ALLOCATED_BYTES.store(0, Ordering::Relaxed);
     }
 
     /// Runs `work` and panics if any allocation occurs on the current thread.
@@ -1150,9 +1300,9 @@ pub mod alloc_tracking {
     /// Panics with allocation backtraces when `work` allocates.
     pub fn assert_no_alloc<R>(work: impl FnOnce() -> R) -> R {
         RECORDS.with(|records| records.borrow_mut().clear());
-        ENABLED.with(|enabled| enabled.set(true));
+        let guard = enable_tracking();
         let result = work();
-        ENABLED.with(|enabled| enabled.set(false));
+        drop(guard);
         let records = take_records();
         assert!(
             records.is_empty(),
@@ -1162,22 +1312,47 @@ pub mod alloc_tracking {
         result
     }
 
-    fn record_allocation(layout: Layout) {
-        let enabled = ENABLED.with(Cell::get);
-        let recording = RECORDING.with(Cell::get);
-        if !enabled || recording {
+    fn enable_tracking() -> TrackingGuard {
+        STATE.with(|state| {
+            let previous = *state.borrow();
+            *state.borrow_mut() = TrackingState {
+                enabled: true,
+                recording: false,
+            };
+            TrackingGuard { previous }
+        })
+    }
+
+    fn count_allocation(counter: &AtomicUsize, size: usize) {
+        counter.fetch_add(1, Ordering::Relaxed);
+        ALLOCATED_BYTES.fetch_add(size, Ordering::Relaxed);
+    }
+
+    fn record_allocation(operation: &'static str, layout: Layout) {
+        let should_record = STATE.with(|state| {
+            let current = *state.borrow();
+            if current.enabled && !current.recording {
+                *state.borrow_mut() = TrackingState {
+                    enabled: true,
+                    recording: true,
+                };
+                true
+            } else {
+                false
+            }
+        });
+        if !should_record {
             return;
         }
 
-        RECORDING.with(|guard| guard.set(true));
         RECORDS.with(|records| {
             records.borrow_mut().push(AllocationRecord {
                 size: layout.size(),
                 align: layout.align(),
-                backtrace: Backtrace::force_capture().to_string(),
+                backtrace: format!("{operation}\n{}", Backtrace::force_capture()),
             });
         });
-        RECORDING.with(|guard| guard.set(false));
+        STATE.with(|state| state.borrow_mut().recording = false);
     }
 
     fn take_records() -> Vec<AllocationRecord> {
@@ -1202,6 +1377,41 @@ pub mod alloc_tracking {
 #[doc(hidden)]
 pub mod alloc_tracking {
     //! No-op allocation tracker when `alloc-track` is disabled.
+
+    /// Zero-valued allocation counters returned when tracking is disabled.
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+    pub struct AllocationCounters {
+        /// Number of `GlobalAlloc::alloc` calls observed.
+        pub allocations: usize,
+        /// Number of `GlobalAlloc::alloc_zeroed` calls observed.
+        pub alloc_zeroed: usize,
+        /// Number of `GlobalAlloc::realloc` calls observed.
+        pub reallocations: usize,
+        /// Total requested allocation bytes observed.
+        pub allocated_bytes: usize,
+    }
+
+    impl AllocationCounters {
+        /// Returns zero when allocation tracking is disabled.
+        #[must_use]
+        pub const fn total_operations(self) -> usize {
+            self.allocations + self.alloc_zeroed + self.reallocations
+        }
+    }
+
+    /// Returns zero counters when allocation tracking is disabled.
+    #[must_use]
+    pub const fn allocation_counters() -> AllocationCounters {
+        AllocationCounters {
+            allocations: 0,
+            alloc_zeroed: 0,
+            reallocations: 0,
+            allocated_bytes: 0,
+        }
+    }
+
+    /// Does nothing when allocation tracking is disabled.
+    pub const fn reset_allocation_counters() {}
 
     /// Runs `work` without allocation tracking.
     pub fn assert_no_alloc<R>(work: impl FnOnce() -> R) -> R {
@@ -1365,6 +1575,20 @@ mod tests {
             drop(packet);
         });
         Ok(())
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn allocation_counters_expose_soak_window_activity() {
+        crate::alloc_tracking::reset_allocation_counters();
+
+        let allocated = Vec::<u8>::with_capacity(16);
+        let counters = crate::alloc_tracking::allocation_counters();
+
+        assert!(counters.allocations >= 1);
+        assert!(counters.allocated_bytes >= allocated.capacity());
+        assert!(counters.total_operations() >= counters.allocations);
+        drop(allocated);
     }
 
     #[cfg_attr(miri, ignore)]

@@ -1,3 +1,4 @@
 # refract-app-textroom metrics
 
-No metrics are emitted in Phase 0. When this crate introduces runtime behavior, every metric must document name, type, unit, and cardinality bound here before release.
+No textroom-specific process metrics are emitted yet. Use `refract-app`
+slow-path operation metrics for latency visibility.

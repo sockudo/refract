@@ -1,9 +1,8 @@
 //! Monotonic time abstractions.
 
-pub use std::time::Duration;
-
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 use std::cell::Cell;
+pub use std::time::Duration;
 
 type CompioInstant = std::time::Instant;
 

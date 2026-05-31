@@ -116,7 +116,10 @@ impl DtlsConfig {
     /// ```
     /// # use std::time::Duration;
     /// # use refract_crypto::DtlsConfig;
-    /// assert_eq!(DtlsConfig::new("identity.pem").handshake_timeout(), Duration::from_secs(10));
+    /// assert_eq!(
+    ///     DtlsConfig::new("identity.pem").handshake_timeout(),
+    ///     Duration::from_secs(10)
+    /// );
     /// ```
     #[must_use]
     pub const fn handshake_timeout(&self) -> Duration {
@@ -142,7 +145,10 @@ impl DtlsConfig {
     ///
     /// ```
     /// # use refract_crypto::{DtlsConfig, Stability};
-    /// assert_eq!(DtlsConfig::new("identity.pem").stability(), Stability::Stage1);
+    /// assert_eq!(
+    ///     DtlsConfig::new("identity.pem").stability(),
+    ///     Stability::Stage1
+    /// );
     /// ```
     #[must_use]
     pub const fn stability(&self) -> crate::Stability {

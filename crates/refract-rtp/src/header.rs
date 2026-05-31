@@ -8,8 +8,7 @@
 //! ```
 //! # use refract_rtp::header::RtpHeader;
 //! let packet = [
-//!     0x80, 0xe0, 0, 1, 0, 0, 0, 42, 0x11, 0x22, 0x33, 0x44,
-//!     0xaa, 0xbb,
+//!     0x80, 0xe0, 0, 1, 0, 0, 0, 42, 0x11, 0x22, 0x33, 0x44, 0xaa, 0xbb,
 //! ];
 //! let header = RtpHeader::parse(&packet)?;
 //! assert!(header.marker());
@@ -17,8 +16,7 @@
 //! # Ok::<(), refract_rtp::RtpError>(())
 //! ```
 
-use crate::error::RtpResult;
-use crate::{RtpError, Stability};
+use crate::{RtpError, Stability, error::RtpResult};
 
 /// Fixed RTP header length in bytes.
 pub const FIXED_HEADER_LEN: usize = 12;
@@ -344,7 +342,10 @@ impl<'a> RtpHeader<'a> {
     /// ```
     /// # use refract_rtp::header::RtpHeader;
     /// let packet = [0x81, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 9];
-    /// assert_eq!(RtpHeader::parse(&packet)?.csrcs().collect::<Vec<_>>(), vec![9]);
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?.csrcs().collect::<Vec<_>>(),
+    ///     vec![9]
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -424,7 +425,10 @@ impl OwnedRtpHeader {
     /// ```
     /// # use refract_rtp::{header::RtpHeader, Stability};
     /// let packet = [0x80, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-    /// assert_eq!(RtpHeader::parse(&packet)?.to_owned().stability(), Stability::Stage1);
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?.to_owned().stability(),
+    ///     Stability::Stage1
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -589,7 +593,10 @@ impl OwnedRtpHeader {
     /// ```
     /// # use refract_rtp::header::{RtpHeader, FIXED_HEADER_LEN};
     /// let packet = [0x80, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-    /// assert_eq!(RtpHeader::parse(&packet)?.to_owned().header_len(), FIXED_HEADER_LEN);
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?.to_owned().header_len(),
+    ///     FIXED_HEADER_LEN
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -621,7 +628,10 @@ impl<'a> RtpExtensionBlock<'a> {
     /// ```
     /// # use refract_rtp::header::RtpHeader;
     /// let packet = [0x90, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0xbe, 0xde, 0, 0];
-    /// assert_eq!(RtpHeader::parse(&packet)?.extension().map(|e| e.profile()), Some(0xbede));
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?.extension().map(|e| e.profile()),
+    ///     Some(0xbede)
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -636,7 +646,10 @@ impl<'a> RtpExtensionBlock<'a> {
     /// ```
     /// # use refract_rtp::header::RtpHeader;
     /// let packet = [0x90, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0xbe, 0xde, 0, 0];
-    /// assert_eq!(RtpHeader::parse(&packet)?.extension().map(|e| e.payload()), Some(&[][..]));
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?.extension().map(|e| e.payload()),
+    ///     Some(&[][..])
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -651,7 +664,12 @@ impl<'a> RtpExtensionBlock<'a> {
     /// ```
     /// # use refract_rtp::{header::RtpHeader, Stability};
     /// let packet = [0x90, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0xbe, 0xde, 0, 0];
-    /// assert_eq!(RtpHeader::parse(&packet)?.extension().map(|e| e.stability()), Some(Stability::Stage1));
+    /// assert_eq!(
+    ///     RtpHeader::parse(&packet)?
+    ///         .extension()
+    ///         .map(|e| e.stability()),
+    ///     Some(Stability::Stage1)
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -728,7 +746,13 @@ const fn read_u32_const(bytes: &[u8], offset: usize) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "alloc-track")]
+    use refract_slab::assert_no_alloc;
+
     use super::*;
+
+    #[cfg(feature = "alloc-track")]
+    const HOT_PATH_SOAK_PACKETS: usize = 16_384;
 
     #[test]
     fn parses_csrc_extension_and_padding() {
@@ -773,5 +797,30 @@ mod tests {
             RtpHeader::parse(&packet),
             Err(RtpError::ExtensionHeaderTruncated { remaining: 1 })
         ));
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn parse_hot_path_does_not_allocate() {
+        let packet = [
+            0x80, 96, 0x12, 0x34, 0, 0, 0, 9, 0xaa, 0xbb, 0xcc, 0xdd, 1, 2, 3, 4,
+        ];
+
+        assert_no_alloc!(|| RtpHeader::parse(&packet).expect("valid rtp packet"));
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn parse_hot_path_soak_does_not_allocate() {
+        let packet = [
+            0x80, 96, 0x12, 0x34, 0, 0, 0, 9, 0xaa, 0xbb, 0xcc, 0xdd, 1, 2, 3, 4,
+        ];
+
+        assert_no_alloc!(|| {
+            (0..HOT_PATH_SOAK_PACKETS).for_each(|_| {
+                let header = RtpHeader::parse(&packet).expect("valid rtp packet");
+                assert_eq!(header.payload(), &[1, 2, 3, 4]);
+            });
+        });
     }
 }

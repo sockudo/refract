@@ -18,5 +18,9 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+refract-signal = { path = "../refract-signal" }
+thiserror.workspace = true
+
 [lints]
 workspace = true

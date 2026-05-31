@@ -6,10 +6,14 @@
 //!
 //! ```
 //! # use refract_rtp::RtpError;
-//! assert_eq!(RtpError::PacketTooShort { len: 2 }.error_code(), "RTP_PARSE_0001");
+//! assert_eq!(
+//!     RtpError::PacketTooShort { len: 2 }.error_code(),
+//!     "RTP_PARSE_0001"
+//! );
 //! ```
 
 use std::fmt;
+
 use thiserror::Error;
 
 /// Result alias for `refract-rtp` operations.
@@ -146,7 +150,10 @@ impl ExtensionErrorReason {
     ///
     /// ```
     /// # use refract_rtp::error::ExtensionErrorReason;
-    /// assert_eq!(ExtensionErrorReason::InvalidKnownLength.as_str(), "invalid_known_length");
+    /// assert_eq!(
+    ///     ExtensionErrorReason::InvalidKnownLength.as_str(),
+    ///     "invalid_known_length"
+    /// );
     /// ```
     #[must_use]
     pub const fn as_str(self) -> &'static str {
@@ -211,7 +218,10 @@ impl RtpError {
     ///
     /// ```
     /// # use refract_rtp::RtpError;
-    /// assert_eq!(RtpError::InvalidVersion { version: 1 }.error_code(), "RTP_PARSE_0002");
+    /// assert_eq!(
+    ///     RtpError::InvalidVersion { version: 1 }.error_code(),
+    ///     "RTP_PARSE_0002"
+    /// );
     /// ```
     #[must_use]
     pub const fn error_code(&self) -> &'static str {

@@ -1,3 +1,5 @@
 # refract-app-recording metrics
 
-No metrics are emitted in Phase 0. When this crate introduces runtime behavior, every metric must document name, type, unit, and cardinality bound here before release.
+No recording-specific process metrics are emitted yet. The app is exercised
+through `refract-app` slow-path operation metrics, and recording-specific
+counters should be added only with bounded labels.

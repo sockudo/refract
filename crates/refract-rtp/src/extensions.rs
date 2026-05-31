@@ -12,13 +12,18 @@
 //! let registry = ExtensionRegistry::new().with(1, ExtensionKind::AudioLevel);
 //! let mut iter = RtpExtensions::new(0xbede, &payload, registry)?;
 //! let extension = iter.next().transpose()?;
-//! assert_eq!(extension.map(|entry| entry.kind()), Some(Some(ExtensionKind::AudioLevel)));
+//! assert_eq!(
+//!     extension.map(|entry| entry.kind()),
+//!     Some(Some(ExtensionKind::AudioLevel))
+//! );
 //! # Ok::<(), refract_rtp::RtpError>(())
 //! ```
 
-use crate::error::{ExtensionErrorReason, RtpResult};
-use crate::metrics::record_parse_error;
-use crate::{RtpError, Stability};
+use crate::{
+    RtpError, Stability,
+    error::{ExtensionErrorReason, RtpResult},
+    metrics::record_parse_error,
+};
 
 const ONE_BYTE_PROFILE: u16 = 0xbede;
 const TWO_BYTE_PROFILE_MASK: u16 = 0xf000;
@@ -201,7 +206,10 @@ impl ExtensionFormat {
     ///
     /// ```
     /// # use refract_rtp::extensions::ExtensionFormat;
-    /// assert_eq!(ExtensionFormat::from_profile(0xbede)?, ExtensionFormat::OneByte);
+    /// assert_eq!(
+    ///     ExtensionFormat::from_profile(0xbede)?,
+    ///     ExtensionFormat::OneByte
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     pub const fn from_profile(profile: u16) -> RtpResult<Self> {
@@ -263,7 +271,10 @@ impl<'a> RtpExtension<'a> {
     /// # use refract_rtp::extensions::{ExtensionKind, ExtensionRegistry, RtpExtensions};
     /// let registry = ExtensionRegistry::new().with(1, ExtensionKind::AudioLevel);
     /// let mut iter = RtpExtensions::new(0xbede, &[0x10, 0, 0, 0], registry)?;
-    /// assert_eq!(iter.next().transpose()?.map(|e| e.kind()), Some(Some(ExtensionKind::AudioLevel)));
+    /// assert_eq!(
+    ///     iter.next().transpose()?.map(|e| e.kind()),
+    ///     Some(Some(ExtensionKind::AudioLevel))
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -278,7 +289,10 @@ impl<'a> RtpExtension<'a> {
     /// ```
     /// # use refract_rtp::extensions::{ExtensionRegistry, RtpExtensions};
     /// let mut iter = RtpExtensions::new(0xbede, &[0x10, 0xaa, 0, 0], ExtensionRegistry::new())?;
-    /// assert_eq!(iter.next().transpose()?.map(|e| e.value()), Some(&[0xaa][..]));
+    /// assert_eq!(
+    ///     iter.next().transpose()?.map(|e| e.value()),
+    ///     Some(&[0xaa][..])
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]
@@ -293,7 +307,10 @@ impl<'a> RtpExtension<'a> {
     /// ```
     /// # use refract_rtp::{extensions::{ExtensionRegistry, RtpExtensions}, Stability};
     /// let mut iter = RtpExtensions::new(0xbede, &[0x10, 0, 0, 0], ExtensionRegistry::new())?;
-    /// assert_eq!(iter.next().transpose()?.map(|e| e.stability()), Some(Stability::Stage1));
+    /// assert_eq!(
+    ///     iter.next().transpose()?.map(|e| e.stability()),
+    ///     Some(Stability::Stage1)
+    /// );
     /// # Ok::<(), refract_rtp::RtpError>(())
     /// ```
     #[must_use]

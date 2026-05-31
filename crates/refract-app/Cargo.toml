@@ -18,5 +18,14 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+compio.workspace = true
+metrics.workspace = true
+refract-core = { path = "../refract-core" }
+refract-router = { path = "../refract-router" }
+rtrb.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
 [lints]
 workspace = true

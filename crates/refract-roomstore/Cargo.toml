@@ -18,5 +18,17 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+bincode.workspace = true
+futures-core = "=0.3.32"
+refract-core = { path = "../refract-core" }
+rkyv.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+compio.workspace = true
+proptest = "=1.11.0"
+
 [lints]
 workspace = true

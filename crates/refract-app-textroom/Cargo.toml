@@ -18,5 +18,19 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+default = ["app-textroom"]
+app-textroom = []
+
+[dependencies]
+refract-app = { path = "../refract-app" }
+refract-core = { path = "../refract-core" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+compio.workspace = true
+
 [lints]
 workspace = true

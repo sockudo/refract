@@ -18,5 +18,19 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+redis-integration = []
+
+[dependencies]
+futures-core = "=0.3.32"
+redis.workspace = true
+refract-core = { path = "../refract-core" }
+refract-roomstore = { path = "../refract-roomstore" }
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+compio.workspace = true
+
 [lints]
 workspace = true

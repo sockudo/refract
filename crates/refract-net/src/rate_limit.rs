@@ -138,8 +138,9 @@ fn shard_index(ip: IpAddr, shards: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::net::Ipv4Addr;
+
+    use super::*;
 
     #[test]
     fn limits_burst_and_refills() {

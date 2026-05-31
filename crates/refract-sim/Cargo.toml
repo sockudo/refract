@@ -18,5 +18,13 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+sim = []
+
+[dependencies]
+refract-core = { path = "../refract-core" }
+refract-net = { path = "../refract-net" }
+thiserror.workspace = true
+
 [lints]
 workspace = true

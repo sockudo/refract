@@ -1,3 +1,6 @@
 # refract-app-textroom
 
-Text room application boundary for non-media room events. Implementation details are intentionally deferred until the relevant Stage 1 prompt introduces tests, behavior, and production gates for this boundary.
+Text room application for non-media room events.
+
+The implementation is gated by Cargo feature `app-textroom` and uses the
+versioned JSON protocol documented in `docs/protocols/app-textroom.md`.

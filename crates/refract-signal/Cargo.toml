@@ -18,5 +18,21 @@ publish = false
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+bytes.workspace = true
+governor.workspace = true
+jsonwebtoken.workspace = true
+refract-app = { path = "../refract-app" }
+refract-core = { path = "../refract-core" }
+serde.workspace = true
+serde_json.workspace = true
+socket2.workspace = true
+sockudo-ws.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+refract-app-room = { path = "../refract-app-room" }
+
 [lints]
 workspace = true

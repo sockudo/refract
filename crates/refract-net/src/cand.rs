@@ -4,9 +4,17 @@
 //!
 //! ```
 //! use std::net::SocketAddr;
+//!
 //! use refract_net::cand::{Candidate, CandidateKind, TransportProtocol};
 //!
-//! let c = Candidate::new("1", 1, TransportProtocol::Udp, 100, "127.0.0.1:9".parse::<SocketAddr>()?, CandidateKind::Host);
+//! let c = Candidate::new(
+//!     "1",
+//!     1,
+//!     TransportProtocol::Udp,
+//!     100,
+//!     "127.0.0.1:9".parse::<SocketAddr>()?,
+//!     CandidateKind::Host,
+//! );
 //! assert!(c.to_sdp().starts_with("candidate:1 1 UDP"));
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```

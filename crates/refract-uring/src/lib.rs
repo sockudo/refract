@@ -12,31 +12,27 @@
 #![warn(rust_2024_compatibility)]
 #![allow(clippy::multiple_crate_versions)]
 
+#[cfg(target_os = "linux")]
+use core::mem::size_of_val;
 use core::{
     fmt,
     mem::{MaybeUninit, size_of},
     time::Duration,
 };
+#[cfg(unix)]
+use std::os::fd::AsRawFd;
 use std::{
     io,
     net::{SocketAddr, SocketAddrV6, UdpSocket},
 };
 
 use compio_buf::{IoBufMut, SetLen};
-use refract_slab::{PacketBuf, SlabError, SlabPool};
-use thiserror::Error;
-
-#[cfg(unix)]
-use std::os::fd::AsRawFd;
-
-#[cfg(target_os = "linux")]
-use core::mem::size_of_val;
-
-#[cfg(target_os = "linux")]
-use socket2::SockAddr;
-
 #[cfg(target_os = "linux")]
 use io_uring::{IoUring, Probe, opcode};
+use refract_slab::{PacketBuf, SlabError, SlabPool};
+#[cfg(target_os = "linux")]
+use socket2::SockAddr;
+use thiserror::Error;
 
 /// Result alias for uring operations.
 pub type Result<T> = core::result::Result<T, UringError>;

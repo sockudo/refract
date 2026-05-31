@@ -6,7 +6,9 @@
 //!
 //! ```
 //! # use refract_crypto::CryptoError;
-//! let error = CryptoError::UnsupportedProtocolVersion { version: "DTLS 1.2" };
+//! let error = CryptoError::UnsupportedProtocolVersion {
+//!     version: "DTLS 1.2",
+//! };
 //! assert_eq!(error.error_code(), "HSF-CRY-001");
 //! ```
 
@@ -150,7 +152,9 @@ impl CryptoError {
     ///
     /// ```
     /// # use refract_crypto::{CryptoError, Stability};
-    /// let error = CryptoError::UnsupportedProtocolVersion { version: "DTLS 1.2" };
+    /// let error = CryptoError::UnsupportedProtocolVersion {
+    ///     version: "DTLS 1.2",
+    /// };
     /// assert_eq!(error.stability(), Stability::Stage1);
     /// ```
     #[must_use]

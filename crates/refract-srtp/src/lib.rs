@@ -10,7 +10,9 @@
 //! # use refract_srtp::{SrtpContext, SrtpKeys, SrtpProfile};
 //! let keys = SrtpKeys::new(SrtpProfile::AeadAes128Gcm, [1; 32], [2; 24])?;
 //! let mut ctx = SrtpContext::new(keys, 64)?;
-//! let mut packet = vec![0x80, 96, 0, 1, 0, 0, 0, 7, 0xaa, 0xbb, 0xcc, 0xdd, 1, 2, 3, 4];
+//! let mut packet = vec![
+//!     0x80, 96, 0, 1, 0, 0, 0, 7, 0xaa, 0xbb, 0xcc, 0xdd, 1, 2, 3, 4,
+//! ];
 //! ctx.egress.protect_rtp(&mut packet)?;
 //! let plaintext = ctx.ingress.unprotect_rtp(&mut packet)?;
 //! assert_eq!(&plaintext[12..], &[1, 2, 3, 4]);
@@ -512,19 +514,21 @@ impl Ingress {
             reason: "roc_overflow",
         })?;
         let nonce = rtp_nonce(self.salt, ssrc, roc, sequence);
-        let aad = rtp_aad(packet, header_len)?;
-        let payload = self
-            .key
-            .open_in_place(
-                Nonce::assume_unique_for_key(nonce),
-                Aad::from(aad),
-                &mut packet[header_len..],
-            )
-            .map_err(|_| {
-                self.torn_down = true;
-                SrtpError::AuthFailure
-            })?;
-        let new_len = header_len + payload.len();
+        let new_len = {
+            let (aad, encrypted) = packet.split_at_mut(header_len);
+            let payload = self
+                .key
+                .open_in_place(
+                    Nonce::assume_unique_for_key(nonce),
+                    Aad::from(&*aad),
+                    encrypted,
+                )
+                .map_err(|_| {
+                    self.torn_down = true;
+                    SrtpError::AuthFailure
+                })?;
+            header_len + payload.len()
+        };
         packet.truncate(new_len);
         stream.accept(index);
         Ok(packet.as_slice())
@@ -638,15 +642,16 @@ impl Egress {
         let stream = self.streams.entry(ssrc).or_default();
         let roc = stream.observe(sequence);
         let nonce = rtp_nonce(self.salt, ssrc, roc, sequence);
-        let aad = rtp_aad(packet, header_len)?;
-        let tag = self
-            .key
-            .seal_in_place_separate_tag(
-                Nonce::assume_unique_for_key(nonce),
-                Aad::from(aad),
-                &mut packet[header_len..],
-            )
-            .map_err(|_| SrtpError::Aead)?;
+        let tag = {
+            let (aad, payload) = packet.split_at_mut(header_len);
+            self.key
+                .seal_in_place_separate_tag(
+                    Nonce::assume_unique_for_key(nonce),
+                    Aad::from(&*aad),
+                    payload,
+                )
+                .map_err(|_| SrtpError::Aead)?
+        };
         packet.extend_from_slice(tag.as_ref());
         Ok(())
     }
@@ -878,16 +883,6 @@ fn rtp_header_len(packet: &[u8]) -> SrtpResult<usize> {
     Ok(header_len)
 }
 
-fn rtp_aad(packet: &[u8], header_len: usize) -> SrtpResult<Vec<u8>> {
-    if packet.len() < header_len {
-        return Err(SrtpError::PacketTooShort {
-            len: packet.len(),
-            minimum: header_len,
-        });
-    }
-    Ok(aad_prefix(packet, header_len))
-}
-
 fn rtcp_aad(packet: &[u8], clear_len: usize, encrypted_index: u32) -> SrtpResult<Vec<u8>> {
     if packet.len() < clear_len {
         return Err(SrtpError::PacketTooShort {
@@ -900,23 +895,8 @@ fn rtcp_aad(packet: &[u8], clear_len: usize, encrypted_index: u32) -> SrtpResult
     Ok(aad)
 }
 
-fn aad_prefix(packet: &[u8], header_len: usize) -> Vec<u8> {
-    #[cfg(feature = "simd")]
-    {
-        simd_copy_prefix(packet, header_len)
-    }
-    #[cfg(not(feature = "simd"))]
-    {
-        scalar_copy_prefix(packet, header_len)
-    }
-}
-
-#[cfg(not(feature = "simd"))]
-fn scalar_copy_prefix(packet: &[u8], header_len: usize) -> Vec<u8> {
-    packet[..header_len].to_vec()
-}
-
 #[cfg(feature = "simd")]
+#[allow(dead_code)]
 fn simd_copy_prefix(packet: &[u8], header_len: usize) -> Vec<u8> {
     use std::simd::u8x16;
 
@@ -1013,7 +993,13 @@ impl fmt::Display for SrtpProfile {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "alloc-track")]
+    use refract_slab::assert_no_alloc;
+
     use super::*;
+
+    #[cfg(feature = "alloc-track")]
+    const HOT_PATH_SOAK_PACKETS: u16 = 4_096;
 
     fn keys() -> SrtpKeys {
         SrtpKeys::new(SrtpProfile::AeadAes128Gcm, [7; 32], [9; 24])
@@ -1027,6 +1013,23 @@ mod tests {
         out.extend_from_slice(&0xaabb_ccdd_u32.to_be_bytes());
         out.extend_from_slice(&[1, 2, 3, 4]);
         out
+    }
+
+    #[cfg(feature = "alloc-track")]
+    fn rtp_with_tag_capacity(seq: u16) -> Vec<u8> {
+        let mut packet = rtp(seq);
+        packet.reserve_exact(GCM_TAG_LEN);
+        packet
+    }
+
+    #[cfg(feature = "alloc-track")]
+    fn reset_rtp(packet: &mut Vec<u8>, seq: u16) {
+        packet.clear();
+        packet.extend_from_slice(&[0x80, 96]);
+        packet.extend_from_slice(&seq.to_be_bytes());
+        packet.extend_from_slice(&7_u32.to_be_bytes());
+        packet.extend_from_slice(&0xaabb_ccdd_u32.to_be_bytes());
+        packet.extend_from_slice(&[1, 2, 3, 4]);
     }
 
     #[test]
@@ -1132,6 +1135,78 @@ mod tests {
         assert_eq!(outputs.len(), 2);
         assert_eq!(outputs[0].len(), 32);
         assert_eq!(outputs[1].len(), 32);
+        Ok(())
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rtp_protect_hot_path_does_not_allocate_after_stream_warmup() -> SrtpResult<()> {
+        let mut ctx = SrtpContext::new(keys(), 64)?;
+        let mut warmup = rtp_with_tag_capacity(1);
+        ctx.egress.protect_rtp(&mut warmup)?;
+
+        let mut packet = rtp_with_tag_capacity(2);
+        assert_no_alloc!(|| ctx.egress.protect_rtp(&mut packet))?;
+
+        assert_eq!(packet.len(), 32);
+        Ok(())
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rtp_unprotect_hot_path_does_not_allocate_after_stream_warmup() -> SrtpResult<()> {
+        let mut sender = SrtpContext::new(keys(), 64)?;
+        let mut receiver = SrtpContext::new(keys(), 64)?;
+        let mut warmup = rtp_with_tag_capacity(1);
+        sender.egress.protect_rtp(&mut warmup)?;
+        receiver.ingress.unprotect_rtp(&mut warmup)?;
+
+        let mut packet = rtp_with_tag_capacity(2);
+        sender.egress.protect_rtp(&mut packet)?;
+        let plaintext = assert_no_alloc!(|| receiver.ingress.unprotect_rtp(&mut packet))?;
+
+        assert_eq!(&plaintext[12..], &[1, 2, 3, 4]);
+        Ok(())
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rtp_protect_hot_path_soak_does_not_allocate_after_warmup() -> SrtpResult<()> {
+        let mut ctx = SrtpContext::new(keys(), 64)?;
+        let mut packet = rtp_with_tag_capacity(1);
+        ctx.egress.protect_rtp(&mut packet)?;
+
+        assert_no_alloc!(|| {
+            (2..HOT_PATH_SOAK_PACKETS).try_for_each(|sequence| {
+                reset_rtp(&mut packet, sequence);
+                ctx.egress.protect_rtp(&mut packet)
+            })
+        })?;
+
+        assert_eq!(packet.len(), 32);
+        Ok(())
+    }
+
+    #[cfg(feature = "alloc-track")]
+    #[test]
+    fn rtp_unprotect_hot_path_soak_does_not_allocate_after_warmup() -> SrtpResult<()> {
+        let mut sender = SrtpContext::new(keys(), 64)?;
+        let mut receiver = SrtpContext::new(keys(), 64)?;
+        let mut packets = (1..HOT_PATH_SOAK_PACKETS)
+            .map(|sequence| {
+                let mut packet = rtp_with_tag_capacity(sequence);
+                sender.egress.protect_rtp(&mut packet)?;
+                Ok(packet)
+            })
+            .collect::<SrtpResult<Vec<_>>>()?;
+        receiver.ingress.unprotect_rtp(&mut packets[0])?;
+
+        assert_no_alloc!(|| {
+            packets
+                .iter_mut()
+                .skip(1)
+                .try_for_each(|packet| receiver.ingress.unprotect_rtp(packet).map(|_| ()))
+        })?;
         Ok(())
     }
 

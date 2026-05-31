@@ -1,3 +1,6 @@
 # refract-app-room metrics
 
-No metrics are emitted in Phase 0. When this crate introduces runtime behavior, every metric must document name, type, unit, and cardinality bound here before release.
+`refract-app-room` currently records behavior through `refract-app` slow-path
+operation metrics. Room-specific counters are intentionally deferred until the
+metrics exporter can preserve bounded room cardinality without exposing dynamic
+room identifiers.

@@ -64,7 +64,10 @@ impl SrtpProtectionProfile {
     ///
     /// ```
     /// # use refract_crypto::SrtpProtectionProfile;
-    /// assert_eq!(SrtpProtectionProfile::AeadAes256Gcm.as_str(), "SRTP_AEAD_AES_256_GCM");
+    /// assert_eq!(
+    ///     SrtpProtectionProfile::AeadAes256Gcm.as_str(),
+    ///     "SRTP_AEAD_AES_256_GCM"
+    /// );
     /// ```
     #[must_use]
     pub const fn as_str(self) -> &'static str {
@@ -125,7 +128,10 @@ impl SrtpProtectionProfile {
     ///
     /// ```
     /// # use refract_crypto::{SrtpProtectionProfile, Stability};
-    /// assert_eq!(SrtpProtectionProfile::AeadAes128Gcm.stability(), Stability::Stage1);
+    /// assert_eq!(
+    ///     SrtpProtectionProfile::AeadAes128Gcm.stability(),
+    ///     Stability::Stage1
+    /// );
     /// ```
     #[must_use]
     pub const fn stability(self) -> Stability {
