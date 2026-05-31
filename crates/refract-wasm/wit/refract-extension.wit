@@ -1,0 +1,14 @@
+/// Refract Stage 1 extension hook surface.
+package refract:extension@0.1.0;
+
+/// Slow-path authorization and room policy extension hooks.
+world refract-extension {
+  /// Authorize a peer before the signaling plane creates a session.
+  export on-auth: func(peer-id: u64, token-hash: u64) -> bool;
+
+  /// Authorize room creation before state is committed.
+  export on-room-create: func(peer-id: u64, room-id: u64) -> bool;
+
+  /// Authorize a peer subscription to a room track and requested layer.
+  export on-subscribe: func(peer-id: u64, room-id: u64, track-id: u64, spatial-layer: u8, temporal-layer: u8) -> bool;
+}

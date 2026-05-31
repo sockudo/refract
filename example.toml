@@ -1,0 +1,34 @@
+## Example refract Stage 1 daemon configuration.
+
+[runtime]
+cores = 1
+pinning = false
+hugepages = false
+
+[net]
+bind_addrs = ["127.0.0.1:50000"]
+rtp_port = 50000
+rtcp_port = 50001
+mtu = 1200
+
+[crypto]
+cert_path = "certs/refract.pem"
+dtls_timeout_ms = 1000
+
+[cluster]
+peer_addrs = []
+
+[cluster.raft]
+node_id = 1
+election_timeout_ms = 1500
+heartbeat_ms = 250
+
+[obs]
+metric_exporter_targets = []
+
+[apps.echo]
+enabled = true
+max_sessions = 64
+
+[apps.echo.settings]
+mode = "loopback"

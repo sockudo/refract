@@ -1,0 +1,21 @@
+[package]
+name = "refract-signal-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[workspace]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+refract-signal = { path = ".." }
+
+[[bin]]
+name = "signal_parse"
+path = "fuzz_targets/signal_parse.rs"
+test = false
+doc = false
+bench = false
