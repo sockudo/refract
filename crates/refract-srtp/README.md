@@ -14,8 +14,9 @@ SRTP/SRTCP AES-GCM protection for refract media packets.
 - Replay rejection increments a bounded metric counter.
 - Fanout protection keeps plaintext behind `ArcSlot` and encrypts once per
   subscriber context.
-- `simd` feature contains safe `std::simd` AAD/nonce helper paths with scalar
-  fallback available by default.
+- `simd` feature is reserved for stable portable-SIMD AAD/nonce helper paths;
+  it currently uses the scalar implementation so `--all-features` remains
+  compatible with the pinned stable toolchain.
 
 ## Performance gates
 

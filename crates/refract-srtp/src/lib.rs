@@ -19,7 +19,6 @@
 //! # Ok::<(), refract_srtp::SrtpError>(())
 //! ```
 
-#![cfg_attr(feature = "simd", feature(portable_simd))]
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 #![warn(clippy::pedantic)]
@@ -898,18 +897,7 @@ fn rtcp_aad(packet: &[u8], clear_len: usize, encrypted_index: u32) -> SrtpResult
 #[cfg(feature = "simd")]
 #[allow(dead_code)]
 fn simd_copy_prefix(packet: &[u8], header_len: usize) -> Vec<u8> {
-    use std::simd::u8x16;
-
-    let mut out = vec![0; header_len];
-    let mut chunks = packet[..header_len].chunks_exact(16);
-    for (index, chunk) in chunks.by_ref().enumerate() {
-        let vec = u8x16::from_slice(chunk);
-        vec.copy_to_slice(&mut out[index * 16..index * 16 + 16]);
-    }
-    let remainder = chunks.remainder();
-    let start = header_len - remainder.len();
-    out[start..].copy_from_slice(remainder);
-    out
+    packet[..header_len].to_vec()
 }
 
 fn rtp_nonce(salt: [u8; GCM_SALT_LEN], ssrc: u32, roc: u32, sequence: u16) -> [u8; GCM_SALT_LEN] {
@@ -938,7 +926,6 @@ fn xor_nonce(salt: [u8; GCM_SALT_LEN], base: [u8; GCM_SALT_LEN]) -> [u8; GCM_SAL
     }
 }
 
-#[cfg(not(feature = "simd"))]
 fn scalar_xor_nonce(salt: [u8; GCM_SALT_LEN], base: [u8; GCM_SALT_LEN]) -> [u8; GCM_SALT_LEN] {
     let mut out = [0; GCM_SALT_LEN];
     for (dst, (salt_byte, base_byte)) in out.iter_mut().zip(salt.iter().zip(base.iter())) {
@@ -949,17 +936,7 @@ fn scalar_xor_nonce(salt: [u8; GCM_SALT_LEN], base: [u8; GCM_SALT_LEN]) -> [u8; 
 
 #[cfg(feature = "simd")]
 fn simd_xor_nonce(salt: [u8; GCM_SALT_LEN], base: [u8; GCM_SALT_LEN]) -> [u8; GCM_SALT_LEN] {
-    use std::simd::u8x16;
-
-    let mut left = [0_u8; 16];
-    let mut right = [0_u8; 16];
-    left[..GCM_SALT_LEN].copy_from_slice(&salt);
-    right[..GCM_SALT_LEN].copy_from_slice(&base);
-    let vec = u8x16::from_array(left) ^ u8x16::from_array(right);
-    let array = vec.to_array();
-    let mut out = [0; GCM_SALT_LEN];
-    out.copy_from_slice(&array[..GCM_SALT_LEN]);
-    out
+    scalar_xor_nonce(salt, base)
 }
 
 fn read_u16(packet: &[u8], offset: usize) -> SrtpResult<u16> {

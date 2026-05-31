@@ -5,7 +5,8 @@
 The crate is allowed by the workspace invariant to opt out only if a future
 optimization truly requires it. This implementation does not opt out: AES-GCM
 is delegated to aws-lc-rs, nonce/AAD/replay logic is safe Rust, and the optional
-`simd` feature uses `std::simd` without unsafe blocks.
+`simd` feature currently routes through the scalar implementation until stable
+portable SIMD is available on the pinned toolchain.
 
 Current unsafe boundary:
 
