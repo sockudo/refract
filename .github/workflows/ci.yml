@@ -9,8 +9,8 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
         with:
           components: rustfmt
       - run: cargo xtask fmt
@@ -18,8 +18,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
         with:
           components: clippy
       - run: cargo xtask lint
@@ -30,7 +30,7 @@ jobs:
         toolchain: [1.95.0, beta]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -39,7 +39,7 @@ jobs:
   miri:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: miri
@@ -48,24 +48,24 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: taiki-e/install-action@cargo-audit
       - run: cargo xtask audit
 
   deny:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: taiki-e/install-action@cargo-deny
       - run: cargo xtask deny
 
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
         with:
           components: llvm-tools-preview
       - uses: taiki-e/install-action@cargo-llvm-cov
@@ -74,14 +74,14 @@ jobs:
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
       - run: cargo xtask msrv
 
   typos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: crate-ci/typos@master
         with:
           config: typos.toml
@@ -89,14 +89,14 @@ jobs:
   doc-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
       - run: cargo doc --workspace --no-deps --all-features
 
   semver-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: obi1kenobi/cargo-semver-checks-action@v2
 
