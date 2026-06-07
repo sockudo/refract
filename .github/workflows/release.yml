@@ -12,8 +12,8 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@1.100.0
         with:
           components: llvm-tools-preview
       - uses: taiki-e/install-action@cargo-deny
@@ -25,7 +25,7 @@ jobs:
       - run: tar -czf target/refract-artifacts.tar.gz target/release-lto
       - run: sha256sum target/refract-artifacts.tar.gz target/refract-sbom.json > target/SHA256SUMS
       - run: cosign sign-blob --yes target/refract-artifacts.tar.gz --bundle target/refract-artifacts.tar.gz.bundle
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             target/refract-artifacts.tar.gz
