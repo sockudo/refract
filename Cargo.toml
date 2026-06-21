@@ -17,14 +17,14 @@ keywords = ["sfu", "webrtc", "rtp", "media", "realtime"]
 categories = ["multimedia", "network-programming"]
 
 [workspace.dependencies]
-arc-swap = "=1.7.1"
+arc-swap = "=1.9.1"
 aya = { version = "=0.13.1", default-features = false }
 aws-lc-rs = "=1.17.0"
 bincode = { version = "=2.0.1", features = ["derive"] }
-bytes = "=1.11.1"
+bytes = "=1.12.0"
 clap = { version = "=4.6.1", features = ["derive"] }
 compio = { version = "=0.19.0-rc.2", default-features = false, features = ["time"] }
-compio-buf = "=0.8.2-rc.1"
+compio-buf = "=0.8.3"
 core_affinity = "=0.8.3"
 criterion = { version = "=0.8.2", default-features = false }
 crossbeam-queue = "=0.3.12"
@@ -36,22 +36,22 @@ libc = "=0.2.186"
 loom = "=0.7.2"
 metrics = "=0.24.6"
 notify = "=9.0.0-rc.4"
-openraft = { version = "=0.9.21", features = ["generic-snapshot-data", "serde"] }
+openraft = { version = "=0.9.24", features = ["generic-snapshot-data", "serde"] }
 ordered-float = "=5.3.0"
 quinn = { version = "=0.11.9", default-features = false, features = ["rustls-aws-lc-rs"] }
 rand = "=0.10.1"
 rcgen = { version = "=0.14.8", default-features = false, features = ["aws_lc_rs", "crypto", "pem"] }
 redb = "=4.1.0"
-redis = { version = "=1.2.1", default-features = false, features = ["script", "sentinel"] }
+redis = { version = "=1.2.4", default-features = false, features = ["script", "sentinel"] }
 rkyv = { version = "=0.8.16", default-features = true }
-rustls = { version = "=0.23.37", default-features = false, features = ["aws_lc_rs", "std"] }
+rustls = { version = "=0.23.40", default-features = false, features = ["aws_lc_rs", "std"] }
 rustls-pki-types = { version = "=1.14.1", features = ["std"] }
 rtrb = "=0.3.4"
 serde = { version = "=1.0.228", features = ["derive"] }
-serde_json = "=1.0.149"
+serde_json = "=1.0.150"
 sha2 = "=0.11.0"
 signal-hook = "=0.4.4"
-socket2 = "=0.6.3"
+socket2 = "=0.6.4"
 sockudo-ws = { git = "https://github.com/sockudo/sockudo-ws.git", default-features = false }
 strum = { version = "=0.28.0", features = ["derive"] }
 tempfile = "=3.27.0"
