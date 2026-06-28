@@ -22,7 +22,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 arc-swap.workspace = true
 refract-core = { path = "../refract-core" }
 thiserror.workspace = true
-wasmtime = { version = "=24.0.2", default-features = false, features = [
+wasmtime = { version = "=46.0.1", default-features = false, features = [
     "component-model",
     "cranelift",
     "runtime",
