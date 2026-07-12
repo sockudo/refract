@@ -25,7 +25,7 @@ refract-crypto = { path = "../refract-crypto" }
 refract-jitter = { path = "../refract-jitter" }
 refract-router = { path = "../refract-router" }
 refract-srtp = { path = "../refract-srtp" }
-str0m = { version = "=0.19.0", default-features = false, features = ["aws-lc-rs"] }
+str0m = { version = "=0.21.0", default-features = false, features = ["aws-lc-rs"] }
 thiserror.workspace = true
 tracing.workspace = true
 
