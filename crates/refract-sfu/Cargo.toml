@@ -41,7 +41,7 @@ refract-slab = { path = "../refract-slab" }
 refract-srtp = { path = "../refract-srtp" }
 refract-uring = { path = "../refract-uring" }
 rtrb.workspace = true
-rustc-hash = "=2.1.1"
+rustc-hash = "=2.1.3"
 thiserror.workspace = true
 tracing.workspace = true
 

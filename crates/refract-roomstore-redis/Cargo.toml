@@ -22,7 +22,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 redis-integration = []
 
 [dependencies]
-futures-core = "=0.3.32"
+futures-core = "=0.3.33"
 redis.workspace = true
 refract-core = { path = "../refract-core" }
 refract-roomstore = { path = "../refract-roomstore" }
