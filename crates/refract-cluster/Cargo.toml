@@ -23,7 +23,7 @@ cluster-tests = []
 
 [dependencies]
 compio.workspace = true
-futures-core = "=0.3.32"
+futures-core = "=0.3.34"
 openraft.workspace = true
 quinn.workspace = true
 redb.workspace = true
